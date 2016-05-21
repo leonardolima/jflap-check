@@ -1,6 +1,8 @@
 import ply.lex as lex
 
 tokens = (
+    'LBRACKET',         # <
+    'SLASHRBRACKET',    # />
     'VALUE',            # ".*"
     'LSTRUCTURE',       # <structure>
     'RSTRUCTURE',       # </structure>
@@ -55,7 +57,9 @@ tokens = (
     'REXPRESSION'       # </expression>
 )
 
-t_VALUE             = r'[0-9]+\.*[0-9]*|[a-z]+'
+t_LBRACKET          = r'<'
+t_SLASHRBRACKET     = r'/>'
+t_VALUE             = r'[0-9]+\.*[0-9]*|[a-z]+|[A-Za-z0-9]+'
 t_LSTRUCTURE        = r'<structure>'
 t_RSTRUCTURE        = r'</structure>'
 t_LTYPE             = r'<type>'
@@ -90,12 +94,13 @@ t_LTRANSOUT         = r'<transout>'
 t_RTRANSOUT         = r'</transout>'
 t_LOUTPUT           = r'<output>'
 t_ROUTPUT           = r'</output>'
-t_LBLOCK            = r'<block>'
+t_LBLOCK            = r'<block.*>'
 t_RBLOCK            = r'</block>'
 t_LTAG              = r'<tag>'
 t_RTAG              = r'</tag>'
 t_LWRITE            = r'<write>'
 t_RWRITE            = r'</write>'
+t_WRITE             = r'<write/>'
 t_LMOVE             = r'<move>'
 t_RMOVE             = r'</move>'
 t_LPOP              = r'<pop>'

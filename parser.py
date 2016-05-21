@@ -8,7 +8,7 @@ class Parser(object):
         self.parser = yacc.yacc(module=self)
 
     def parse(self, data):
-        self.parser.parse(data)
+        self.parser.parse(data, tracking=True)
         # self.lexer.input(data)
         #
         # # Tokenize
@@ -19,43 +19,78 @@ class Parser(object):
         #     print(tok)
 
     def p_structure(self, p):
-        'structure : LSTRUCTURE LTYPE VALUE RTYPE body RSTRUCTURE'
+        '''structure : LSTRUCTURE LTYPE VALUE RTYPE body_fa RSTRUCTURE
+                     | LSTRUCTURE LTYPE VALUE RTYPE body_tm RSTRUCTURE'''
+        pass
+    
+    ## Types of body
+    def p_body_fa(self, p):
+        'body_fa : LAUTOMATON automaton_fa RAUTOMATON'
         pass
 
-    def p_body(self, p):
-        'body : LAUTOMATON automaton RAUTOMATON'
+    def p_body_tm(self, p):
+        'body_tm : LAUTOMATON automaton_tm machines RAUTOMATON'
+
+    # Types of automaton
+    def p_automaton_fa(self, p):
+        '''automaton_fa : states transitions_fa'''
         pass
 
-    def p_automaton(self, p):
-        '''automaton : states transitions'''
+    def p_automaton_tm(self, p):
+        '''automaton_tm : blocks transitions_tm'''
         pass
 
+    # Representing states
+    # FA: states
+    # TM: blocks
     def p_states(self, p):
         '''states : state states
-                | empty'''
+                  | empty'''
         pass
 
     def p_state(self, p):
         'state : LSTATE LX VALUE RX LY VALUE RY special output RSTATE'
         pass
 
+    def p_blocks(self, p):
+        '''blocks : block blocks
+                  | empty'''
+        pass
+
+    def p_block(self, p):
+        'block : LBLOCK LTAG VALUE RTAG LX VALUE RX LY VALUE RY special output RBLOCK'
+        pass
+
     def p_special(self, p):
         '''special : INITIAL
-                    | FINAL
-                    | empty'''
+                   | FINAL
+                   | empty'''
         pass
 
     def p_state_output(self, p):
         '''output : LOUTPUT VALUE ROUTPUT
-                    | empty'''
-
-    def p_transitions(self, p):
-        '''transitions : transition transitions
-                    | empty'''
+                  | empty'''
         pass
 
-    def p_transition(self, p):
-        'transition : LTRANSITION LFROM VALUE RFROM LTO VALUE RTO read pop push transout write move RTRANSITION'
+    # Transitions 
+    # They differ according to the type of machine
+    def p_transitions_fa(self, p):
+        '''transitions_fa : transition_fa transitions_fa
+                          | empty'''
+        pass
+
+    def p_transitions_tm(self, p):
+        '''transitions_tm : transition_tm transitions_tm
+                          | empty'''
+        pass
+
+    def p_transition_fa(self, p):
+        # 'transition_fa : LTRANSITION LFROM NUM RFROM LTO NUM RTO read pop push transout write move RTRANSITION'
+        'transition_fa : LTRANSITION LFROM VALUE RFROM LTO VALUE RTO READ RTRANSITION'
+        pass
+
+    def p_transition_tm(self, p):
+        'transition_tm : LTRANSITION LFROM VALUE RFROM LTO VALUE RTO read write LMOVE VALUE RMOVE RTRANSITION'
         pass
 
     def p_transition_read(self, p):
@@ -66,14 +101,14 @@ class Parser(object):
 
     def p_transition_pop(self, p):
         '''pop : POP
-                | LPOP VALUE RPOP
-                | empty'''
+               | LPOP VALUE RPOP
+               | empty'''
         pass
 
     def p_transition_push(self, p):
         '''push : PUSH
-                 | LPUSH VALUE RPUSH
-                 | empty'''
+                | LPUSH VALUE RPUSH
+                | empty'''
         pass
 
     def p_transition_transout(self, p):
@@ -83,8 +118,17 @@ class Parser(object):
 
     def p_transition_write(self, p):
         '''write : LWRITE VALUE RWRITE
-                    | WRITE
+                 | WRITE
+                 | empty'''
+
+    def p_machines(self, p):
+        '''machines : machine machines
                     | empty'''
+        pass
+
+    def p_machine(self, p):
+        'machine : LBRACKET VALUE SLASHRBRACKET'
+        pass
 
     def p_transition_move(self, p):
         '''move : LMOVE VALUE RMOVE
@@ -111,7 +155,7 @@ class Parser(object):
     # Error rule for syntax errors
     def p_error(self, p):
         if p:
-            print("Syntax error at token", p.type)
+            print ("Syntax error at token", p.type, "at position", p.lexpos)
             # Just discard the token and tell the parser it's okay.
             self.parser.errok()
         # else:
