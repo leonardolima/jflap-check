@@ -18,15 +18,15 @@ class Parser(object):
         p[0] = Element(type='structure', children=[p[2], p[3], p[4]])
 
     def p_type(self, p):
-        '''type         : LTYPE VALUE RTYPE
-                        | empty'''
+        '''type         : LTYPE VALUE RTYPE'''
 
         p[0] = Element(type='type', value=p[2])
 
     def p_tapes(self, p):
-        '''tapes        : LTAPES VALUE RTAPES'''
+        '''tapes        : LTAPES VALUE RTAPES
+                        | empty'''
 
-        p[0] = Element(type='tapes', value=p[2])
+        p[0] = None if len(p) < 3 else Element(type='tapes', value=p[2])
 
     def p_body(self, p):
         '''body         : expression
