@@ -49,6 +49,8 @@ tokens = (
     'ROUTPUT',          # </output>
     'LBLOCK',           # <block>
     'RBLOCK',           # </block>
+    'LCUSTOMBLOCK',
+    'RCUSTOMBLOCK',
     'LTAG',             # <tag>
     'RTAG',             # </tag>
     'LWRITE',           # <write>
@@ -89,35 +91,38 @@ t_fa_pda_turing_mealy_moore_LX                = r'<x>'
 t_fa_pda_turing_mealy_moore_RX                = r'</x>'
 t_fa_pda_turing_mealy_moore_LY                = r'<y>'
 t_fa_pda_turing_mealy_moore_RY                = r'</y>'
-t_fa_pda_turing_mealy_moore_INITIAL           = r'<initial/>'
-t_fa_pda_turing_mealy_moore_FINAL             = r'<final/>'
-t_fa_pda_turing_mealy_moore_LTRANSITION       = r'<transition>'
+t_fa_pda_turing_mealy_moore_INITIAL           = r'<initial[ ]*/>'
+t_fa_pda_turing_mealy_moore_FINAL             = r'<final[ ]*/>'
+t_fa_pda_turing_mealy_moore_LTRANSITION       = r'<transition[^>]*>'
 t_fa_pda_turing_mealy_moore_RTRANSITION       = r'</transition>'
 t_fa_pda_turing_mealy_moore_LFROM             = r'<from>'
 t_fa_pda_turing_mealy_moore_RFROM             = r'</from>'
 t_fa_pda_turing_mealy_moore_LTO               = r'<to>'
 t_fa_pda_turing_mealy_moore_RTO               = r'</to>'
-t_fa_pda_turing_mealy_moore_LREAD             = r'<read>'
+t_fa_pda_turing_mealy_moore_LREAD             = r'<read[^>]*>'
 t_fa_pda_turing_mealy_moore_RREAD             = r'</read>'
-t_fa_pda_turing_mealy_moore_READ              = r'<read/>'
-t_grammar_LPRODUCTION                         = r'<production>'
-t_grammar_RPRODUCTION                         = r'</production>'
-t_grammar_LLEFT                               = r'<left>'
-t_grammar_RLEFT                               = r'</left>'
-t_grammar_LRIGHT                              = r'<right>'
-t_grammar_RRIGHT                              = r'</right>'
-t_grammar_RIGHT                               = r'<right/>'
+t_fa_pda_turing_mealy_moore_READ              = r'<read[^>]*/>'
+t_grammar_lsystem_LPRODUCTION                         = r'<production>'
+t_grammar_lsystem_RPRODUCTION                         = r'</production>'
+t_grammar_lsystem_LLEFT                               = r'<left>'
+t_grammar_lsystem_RLEFT                               = r'</left>'
+t_grammar_lsystem_LRIGHT                              = r'<right>'
+t_grammar_lsystem_RRIGHT                              = r'</right>'
+t_grammar_lsystem_RIGHT                               = r'<right/>'
 t_moore_mealy_LTRANSOUT                       = r'<transout>'
 t_moore_mealy_RTRANSOUT                       = r'</transout>'
 t_moore_LOUTPUT                               = r'<output>'
 t_moore_ROUTPUT                               = r'</output>'
-t_turing_LBLOCK                               = r'<block>'
+t_turing_LBLOCK                               = r'<block[^>]*>'
 t_turing_RBLOCK                               = r'</block>'
+t_turing_LCUSTOMBLOCK                         = r'<.+\.jff[0-9]*>'
+t_turing_RCUSTOMBLOCK                         = r'</.+\.jff[0-9]*>'
 t_turing_LTAG                                 = r'<tag>'
 t_turing_RTAG                                 = r'</tag>'
-t_turing_LWRITE                               = r'<write>'
+t_turing_LWRITE                               = r'<write[^>]*>'
 t_turing_RWRITE                               = r'</write>'
-t_turing_LMOVE                                = r'<move>'
+t_turing_WRITE                                = r'<write[^>]*/>'
+t_turing_LMOVE                                = r'<move[^>]*>'
 t_turing_RMOVE                                = r'</move>'
 t_turing_LTAPES                                = r'<tapes>'
 t_turing_RTAPES                                = r'</tapes>'
@@ -143,7 +148,7 @@ t_ignore_version                                = r'<\?xml.*\?>'
 t_ignore_htmlcode                               = r'\&\#13;' # FIXME
 
 def t_VALUE(t):
-    r'[0-9]+\.*[0-9]*|[0-9a-zA-Z]+'
+    r'(?<=>).+(?=</)'
     for state, _ in states:
         if t.value == state:
             t.lexer.begin(state)

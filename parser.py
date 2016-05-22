@@ -13,14 +13,20 @@ class Parser(object):
         return self.parser.parse(data)
 
     def p_structure(self, p):
-        '''structure    : LSTRUCTURE type tapes body RSTRUCTURE'''
+        '''structure    : LSTRUCTURE type axiom tapes body RSTRUCTURE'''
 
-        p[0] = Element(type='structure', children=[p[2], p[3], p[4]])
+        p[0] = Element(type='structure', children=[p[2], p[3], p[4], p[5]])
 
     def p_type(self, p):
         '''type         : LTYPE VALUE RTYPE'''
 
         p[0] = Element(type='type', value=p[2])
+
+    def p_axiom(self, p):
+        '''axiom        : LAXIOM VALUE RAXIOM
+                        | empty'''
+
+        p[0] = None if len(p) < 3 else Element(type='axiom', value=p[2])
 
     def p_tapes(self, p):
         '''tapes        : LTAPES VALUE RTAPES
@@ -31,9 +37,10 @@ class Parser(object):
     def p_body(self, p):
         '''body         : expression
                         | automaton
-                        | productions'''
+                        | productions parameters
+                        | states transitions'''
 
-        p[0] = p[1]
+        p[0] = p[1] if len(p) < 3 else [p[1], p[2]]
 
     # Regular Expression
     def p_expression(self, p):
@@ -43,9 +50,18 @@ class Parser(object):
 
     #Finite Automata, Push-dowm Automata, Turing Machine
     def p_automaton(self, p):
-        '''automaton    : LAUTOMATON blocks states transitions RAUTOMATON'''
+        '''automaton    : LAUTOMATON inside RAUTOMATON'''
 
-        p[0] = Element(type='automaton', children=[p[2], p[3], p[4]])
+        p[0] = Element(type='automaton', children=[p[2]])
+
+    def p_inside(self, p):
+        '''inside       : states inside
+                        | blocks inside
+                        | transitions inside
+                        | customblocks inside
+                        | empty'''
+
+        self.make_list(p)
 
     def p_blocks(self, p):
         '''blocks       : block blocks
@@ -54,7 +70,7 @@ class Parser(object):
         self.make_list(p)
 
     def p_block(self, p):
-        '''block        : LBLOCK tag x y RBLOCK'''
+        '''block        : LBLOCK tag x y special RBLOCK'''
 
         p[0] = Element(type='block', children=[p[2], p[3], p[4]])
 
@@ -62,6 +78,17 @@ class Parser(object):
         '''tag          : LTAG VALUE RTAG'''
 
         p[0] = Element(type='tag', value=p[2])
+
+    def p_customblocks(self, p):
+        '''customblocks : customblock customblocks
+                        | empty'''
+
+        self.make_list(p)
+
+    def p_customblock(self, p):
+        '''customblock  : LCUSTOMBLOCK inside RCUSTOMBLOCK'''
+
+        p[0] = Element(type='customblock', value=p[1], children=[p[2]])
 
     def p_states(self, p):
         '''states       : state states
@@ -103,6 +130,7 @@ class Parser(object):
 
     def p_output(self, p):
         '''output       : LOUTPUT VALUE ROUTPUT
+                        | LOUTPUT empty ROUTPUT
                         | empty'''
 
         p[0] = None if len(p) < 3 else Element(type='output', value=p[2])
@@ -114,10 +142,17 @@ class Parser(object):
         self.make_list(p)
 
     def p_transition(self, p):
-        '''transition   : LTRANSITION from to read pop push transout write move RTRANSITION'''
+        '''transition   : LTRANSITION from to action pop push transout RTRANSITION'''
 
         p[0] = Element(type='transition', children=[p[2], p[3], p[4], p[5], p[6], p[7]])
 
+    def p_action(self, p):
+        '''action       : read action
+                        | write action
+                        | move action
+                        | empty'''
+
+        self.make_list(p)
 
     def p_from(self, p):
         '''from         : LFROM VALUE RFROM'''
@@ -138,27 +173,30 @@ class Parser(object):
 
     def p_pop(self, p):
         '''pop          : LPOP VALUE RPOP
-                        | POP empty
+                        | LPOP empty RPOP
+                        | POP
                         | empty'''
 
         p[0] = None if len(p) < 3 else Element(type='pop', value=p[2])
 
     def p_push(self, p):
         '''push         : LPUSH VALUE RPUSH
-                        | PUSH empty
+                        | LPUSH empty RPUSH
+                        | PUSH
                         | empty'''
 
         p[0] = None if len(p) < 3 else Element(type='push', value=p[2])
 
     def p_transout(self, p):
         '''transout     : LTRANSOUT VALUE RTRANSOUT
+                        | LTRANSOUT empty RTRANSOUT
                         | empty'''
 
         p[0] = None if len(p) < 3 else Element(type='transout', value=p[2])
 
     def p_write(self, p):
         '''write        : LWRITE VALUE RWRITE
-                        | WRITE empty
+                        | WRITE
                         | empty'''
 
         p[0] = None if len(p) < 3 else Element(type='write', value=p[2])
@@ -169,7 +207,7 @@ class Parser(object):
 
         p[0] = None if len(p) < 3 else Element(type='move', value=p[2])
 
-    # Context-free Grammar
+    # Context-free Grammar, LSystem
 
     def p_productions(self, p):
         '''productions  : production productions
@@ -194,6 +232,28 @@ class Parser(object):
 
         p[0] = Element(type='right', value=p[2])
 
+    def p_parameters(self, p):
+        '''parameters   : parameter parameters
+                        | empty'''
+        self.make_list(p)
+
+
+    def p_parameter(self, p):
+        '''parameter   : LPARAMETER name value RPARAMETER'''
+
+        p[0] = Element(type='parameter', children=[p[2], p[3]])
+
+    def p_name(self, p):
+        '''name         : LNAME VALUE RNAME'''
+
+        p[0] = Element(type='left', value=p[2])
+
+    def p_value(self, p):
+        '''value         : LVALUE VALUE RVALUE'''
+
+        p[0] = Element(type='left', value=p[2])
+
+
     #empty transition
     def p_empty(self, p):
         '''empty        :'''
@@ -211,7 +271,7 @@ class Parser(object):
     # Error rule for syntax errors
     def p_error(self, p):
         if p:
-            print("Syntax error at token", p.type)
+            print("Syntax error at token", p.type + ' ' + p.value)
             # Just discard the token and tell the parser it's okay.
             self.parser.errok()
         # else:
