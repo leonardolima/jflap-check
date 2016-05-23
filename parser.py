@@ -7,11 +7,12 @@ class Parser(object):
     def __init__(self):
         self.tokens = tokens
         self.lexer = lex.lex(module=lexer)
-        self.parser = yacc.yacc(module=self)
+        self.parser = yacc.yacc(module=self, errorlog=yacc.NullLogger())
 
     def parse(self, data):
         return self.parser.parse(data)
 
+    # Grammar rules
     def p_structure(self, p):
         '''structure    : LSTRUCTURE type axiom tapes body RSTRUCTURE'''
 
@@ -23,49 +24,51 @@ class Parser(object):
         p[0] = Element(type='type', value=p[2])
 
     def p_axiom(self, p):
-        '''axiom        : LAXIOM VALUE RAXIOM
-                        | empty'''
+        '''axiom        : empty
+                        | LAXIOM VALUE RAXIOM'''
 
         p[0] = None if len(p) < 3 else Element(type='axiom', value=p[2])
 
     def p_tapes(self, p):
-        '''tapes        : LTAPES VALUE RTAPES
-                        | empty'''
+        '''tapes        : empty
+                        | LTAPES VALUE RTAPES'''
 
         p[0] = None if len(p) < 3 else Element(type='tapes', value=p[2])
 
     def p_body(self, p):
-        '''body         : expression
+        '''body         : empty
+                        | expression
                         | automaton
                         | productions parameters
                         | states transitions'''
 
         p[0] = p[1] if len(p) < 3 else [p[1], p[2]]
 
-    # Regular Expression
+    # Regular Expressions
     def p_expression(self, p):
         '''expression   : LEXPRESSION VALUE REXPRESSION'''
 
         p[0] = Element(type='expression', value=p[2])
 
-    #Finite Automata, Push-dowm Automata, Turing Machine
+    # Finite Automata, Push-dowm Automata, Turing Machine
     def p_automaton(self, p):
         '''automaton    : LAUTOMATON inside RAUTOMATON'''
 
         p[0] = Element(type='automaton', children=[p[2]])
 
     def p_inside(self, p):
-        '''inside       : states inside
+        '''inside       : empty
+                        | states inside
                         | blocks inside
                         | transitions inside
                         | customblocks inside
-                        | empty'''
+                        | machine inside'''
 
         self.make_list(p)
 
     def p_blocks(self, p):
-        '''blocks       : block blocks
-                        | empty'''
+        '''blocks       : empty
+                        | block blocks'''
 
         self.make_list(p)
 
@@ -80,8 +83,8 @@ class Parser(object):
         p[0] = Element(type='tag', value=p[2])
 
     def p_customblocks(self, p):
-        '''customblocks : customblock customblocks
-                        | empty'''
+        '''customblocks : empty
+                        | customblock customblocks'''
 
         self.make_list(p)
 
@@ -90,9 +93,12 @@ class Parser(object):
 
         p[0] = Element(type='customblock', value=p[1], children=[p[2]])
 
+    def p_machine(self, p):
+        '''machine      : LBRACKET VALUE SLASHRBRACKET'''
+
     def p_states(self, p):
-        '''states       : state states
-                        | empty'''
+        '''states       : empty
+                        | state states'''
 
         self.make_list(p)
 
@@ -117,27 +123,27 @@ class Parser(object):
         p[0] = [p[1], p[2]]
 
     def p_initial(self, p):
-        '''initial      : INITIAL
-                        | empty'''
+        '''initial      : empty
+                        | INITIAL'''
 
         p[0] = None if p[1] is None else Element(type='initial')
 
     def p_final(self, p):
-        '''final        : FINAL
-                        | empty'''
+        '''final        : empty
+                        | FINAL'''
 
         p[0] = None if p[1] is None else Element(type='final')
 
     def p_output(self, p):
-        '''output       : LOUTPUT VALUE ROUTPUT
-                        | LOUTPUT empty ROUTPUT
-                        | empty'''
+        '''output       : empty
+                        | LOUTPUT VALUE ROUTPUT
+                        | LOUTPUT empty ROUTPUT'''
 
         p[0] = None if len(p) < 3 else Element(type='output', value=p[2])
 
     def p_transitions(self, p):
-        '''transitions  : transition transitions
-                        | empty'''
+        '''transitions  : empty
+                        | transition transitions'''
 
         self.make_list(p)
 
@@ -147,10 +153,10 @@ class Parser(object):
         p[0] = Element(type='transition', children=[p[2], p[3], p[4], p[5], p[6], p[7]])
 
     def p_action(self, p):
-        '''action       : read action
+        '''action       : empty
+                        | read action
                         | write action
-                        | move action
-                        | empty'''
+                        | move action'''
 
         self.make_list(p)
 
@@ -172,46 +178,45 @@ class Parser(object):
         p[0] = Element(type='read') if len(p) < 3 else Element(type='read', value=p[2])
 
     def p_pop(self, p):
-        '''pop          : LPOP VALUE RPOP
+        '''pop          : empty
+                        | LPOP VALUE RPOP
                         | LPOP empty RPOP
-                        | POP
-                        | empty'''
+                        | POP'''
 
         p[0] = None if len(p) < 3 else Element(type='pop', value=p[2])
 
     def p_push(self, p):
-        '''push         : LPUSH VALUE RPUSH
+        '''push         : empty
+                        | LPUSH VALUE RPUSH
                         | LPUSH empty RPUSH
-                        | PUSH
-                        | empty'''
+                        | PUSH'''
 
         p[0] = None if len(p) < 3 else Element(type='push', value=p[2])
 
     def p_transout(self, p):
-        '''transout     : LTRANSOUT VALUE RTRANSOUT
-                        | LTRANSOUT empty RTRANSOUT
-                        | empty'''
+        '''transout     : empty
+                        | LTRANSOUT VALUE RTRANSOUT
+                        | LTRANSOUT empty RTRANSOUT'''
 
         p[0] = None if len(p) < 3 else Element(type='transout', value=p[2])
 
     def p_write(self, p):
-        '''write        : LWRITE VALUE RWRITE
+        '''write        : empty
                         | WRITE
-                        | empty'''
+                        | LWRITE VALUE RWRITE'''
 
         p[0] = None if len(p) < 3 else Element(type='write', value=p[2])
 
     def p_move(self, p):
-        '''move         : LMOVE VALUE RMOVE
-                        | empty'''
+        '''move         : empty
+                        | LMOVE VALUE RMOVE'''
 
         p[0] = None if len(p) < 3 else Element(type='move', value=p[2])
 
     # Context-free Grammar, LSystem
-
     def p_productions(self, p):
-        '''productions  : production productions
-                        | empty'''
+        '''productions  : empty
+                        | production productions'''
         self.make_list(p)
 
 
@@ -233,8 +238,8 @@ class Parser(object):
         p[0] = Element(type='right', value=p[2])
 
     def p_parameters(self, p):
-        '''parameters   : parameter parameters
-                        | empty'''
+        '''parameters   : empty
+                        | parameter parameters'''
         self.make_list(p)
 
 
@@ -254,7 +259,7 @@ class Parser(object):
         p[0] = Element(type='left', value=p[2])
 
 
-    #empty transition
+    # Empty transition
     def p_empty(self, p):
         '''empty        :'''
 
@@ -273,6 +278,6 @@ class Parser(object):
         if p:
             print("Syntax error at token", p.type + ' ' + p.value)
             # Just discard the token and tell the parser it's okay.
-            self.parser.errok()
+            # self.parser.errok()
         # else:
             # print("Syntax error at EOF")

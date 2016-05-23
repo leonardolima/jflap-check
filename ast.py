@@ -23,5 +23,8 @@ class Element:
             for element in self.children:
                 element.siblings = [el for el in self.children if el is not element]
 
-    def __repr__(self):
-        return 'Element(type={}, value={})'.format(self.type, self.value)
+    def __repr__(self, level=0):
+        ret = "\t"*level+repr(self.type)+"\n"
+        for child in self.children:
+            ret += child.__repr__(level+1)
+        return ret

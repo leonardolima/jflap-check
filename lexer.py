@@ -12,6 +12,8 @@ states = (
 )
 
 tokens = (
+    'LBRACKET',         # <
+    'SLASHRBRACKET',    # />
     'VALUE',            # ".*"
     'LSTRUCTURE',       # <structure>
     'RSTRUCTURE',       # </structure>
@@ -83,6 +85,8 @@ t_LSTRUCTURE                              = r'<structure>'
 t_RSTRUCTURE                              = r'</structure>'
 t_LTYPE                                   = r'<type>'
 t_RTYPE                                   = r'</type>'
+t_LBRACKET                                = r'<'
+t_SLASHRBRACKET                           = r'/>'
 t_fa_pda_turing_mealy_moore_LAUTOMATON        = r'<automaton>'
 t_fa_pda_turing_mealy_moore_RAUTOMATON        = r'</automaton>'
 t_fa_pda_turing_mealy_moore_LSTATE            = r'<state.*>'
@@ -148,7 +152,7 @@ t_ignore_version                                = r'<\?xml.*\?>'
 t_ignore_htmlcode                               = r'\&\#13;' # FIXME
 
 def t_VALUE(t):
-    r'(?<=>).+(?=</)'
+    r'(?<=>).+(?=</)|[A-Za-z0-9]+'
     for state, _ in states:
         if t.value == state:
             t.lexer.begin(state)
