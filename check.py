@@ -30,10 +30,15 @@ def main():
                 sys.exit(2)                
             p = parser.Parser()
             result = p.parse(f.read())
-            if result != None:
+            if result == None:
+                print "ERROR! The file " + arg + " is not valid"
+            else:
                 print "Parse table successfully generated!"
         elif opt in ("-p", "--print"):
-            print result
+            if result == None:
+                print "Can not print AST because it's empty"
+            else:
+                print result
         elif opt in ("-c", "--clean"):
             try:
                 call(["pyclean", "."])
