@@ -4,7 +4,7 @@ A simple verifier written in Python to check if the syntax of a JFLAP file (.jff
 
 #### Usage:
 
-* To check if the syntax of *<file>* is correct or not:
+* To check if the syntax of _file_ is correct or not:
   ```
   $ python check.py -i (or --input) <file>.jff -p (or --print, this command is optional)
   ```
