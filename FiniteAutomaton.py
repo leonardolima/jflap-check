@@ -89,15 +89,18 @@ class FiniteAutomaton:
         f.close()
 
 def main():
-    states = {'q1', 'q2', 'q3', 'q4', 'q5'}
+    states = {'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8'}
     alphabet = {'a', 'b'}
     initial = 'q1'
     final = {'q4'}
     delta = {'q1': [('a', 'q5'), ('b', 'q2')],
              'q2': [('a', 'q2'), ('b', 'q3')],
              'q3': [('a', 'q5'), ('b', 'q4')],
-             'q4': [('a', 'q5'), ('b', 'q5')],
-             'q5': [('a', 'q5'), ('b', 'q5')]}
+             'q4': [('a', 'q5'), ('b', 'q6')],
+             'q5': [('a', 'q5'), ('b', 'q7')],
+             'q6': [('a', 'q3'), ('b', 'q8')],
+             'q7': [('a', 'q8'), ('b', 'q1')],
+             'q8': [('a', 'q5'), ('b', 'q4')]}
     a = FiniteAutomaton(states, alphabet, delta, initial, final)
     a.toHTML()
 
