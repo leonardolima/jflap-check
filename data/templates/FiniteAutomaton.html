@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="description" content="[An example of getting started with Cytoscape.js]" />
+  <meta charset=utf-8 />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+  <title>[[title]]</title>
+  <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+
+  <style>
+  body {
+    font: 14px helvetica neue, helvetica, arial, sans-serif;
+    background:#f6f4f5;
+    z-index:-5;
+  }
+
+  #lines {
+    background-size: 15px 15px;
+    background-image:repeating-linear-gradient(0deg, #999, #999 1px, transparent 1px, transparent 40px),repeating-linear-gradient(-90deg, #999, #999 1px, transparent 1px, transparent 40px);
+    height:100%;
+    width:100%;
+    opacity:0.14;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:-4;
+  }
+
+  body #cog{
+    position: absolute;
+    padding-top: 30px;
+    padding-right: 15px;
+    top: 0px;
+    right: 0px;
+  }
+
+  #container {
+    width: 324px;
+    overflow: hidden;
+  }
+
+  textarea {
+    border: none;
+    outline: none;
+    resize: none;
+    height: 100px;
+    width: 340px;
+    overflow: auto;
+
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+  }
+
+  .btn {
+    background: #428bca;
+    border: #357ebd solid 1px;
+    border-radius: 3px;
+    color: #fff;
+    display: inline-block;
+    font-size: 14px;
+    padding: 8px 15px;
+    text-decoration: none;
+    text-align: center;
+    min-width: 60px;
+    position: relative;
+    transition: color .1s ease;
+    /* top: 40em;*/
+  }
+  .btn:hover {
+    background: #357ebd;
+  }
+  .btn.btn-big {
+    font-size: 18px;
+    padding: 15px 20px;
+    min-width: 100px;
+  }
+  .btn-close {
+    color: #aaa;
+    font-size: 30px;
+    text-decoration: none;
+    position: absolute;
+    right: 5px;
+    top: 0;
+  }
+  .btn-close:hover {
+    color: #919191;
+  }
+
+  .modal:before {
+    content: "";
+    display: none;
+    background: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+  .modal:target:before {
+    display: block;
+  }
+  .modal:target .modal-dialog {
+    -webkit-transform: translate(0, 0);
+    -ms-transform: translate(0, 0);
+    transform: translate(0, 0);
+    top: 20%;
+  }
+  .modal-dialog {
+    background: #fefefe;
+    border: #333 solid 1px;
+    border-radius: 5px;
+    margin-left: -200px;
+    position: fixed;
+    left: 50%;
+    top: -100%;
+    z-index: 11;
+    width: 360px;
+    -webkit-transform: translate(0, -500%);
+    -ms-transform: translate(0, -500%);
+    transform: translate(0, -500%);
+    -webkit-transition: -webkit-transform 0.3s ease-out;
+    -moz-transition: -moz-transform 0.3s ease-out;
+    -o-transition: -o-transform 0.3s ease-out;
+    transition: transform 0.3s ease-out;
+  }
+  .modal-body {
+    padding: 20px;
+    height: 100%;
+    width: 100%;
+  }
+  .modal-header,
+  .modal-footer {
+    padding: 10px 20px;
+  }
+  .modal-header {
+    border-bottom: #eee solid 1px;
+  }
+  .modal-header h2 {
+    font-size: 20px;
+  }
+  .modal-footer {
+    border-top: #eee solid 1px;
+    text-align: right;
+  }
+
+  #cy {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  #info {
+    color: #c88;
+    font-size: 1em;
+    position: absolute;
+    z-index: -1;
+    left: 1em;
+    top: 1em;
+  }
+  </style>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){ // on dom ready
+
+    var cy = cytoscape({
+      container: document.querySelector('#cy'),
+
+      boxSelectionEnabled: false,
+      autounselectify: true,
+      layout: {
+        name: 'grid'
+      },
+
+      style: cytoscape.stylesheet()
+      .selector('node')
+      .css({
+        'content': 'data(name)',
+        'text-halign': 'center',
+        'text-valign': 'center',
+        'color': 'white',
+        'text-outline-width': 2,
+        'text-outline-color': '#999',
+        'backgrund-color': '#999',
+      })
+      .selector('.initial')
+      .css({
+        'border-color': '#dc322f',
+        'border-width': '5px',
+        'border-opacity': 0.8,
+        'border-style': 'dotted'
+      })
+      .selector('.final')
+      .css({
+        'border-width': '2px',
+        'border-color': '#2b2a27',
+        'border-opacity': 0.8,
+      })
+      .selector('edge')
+      .css({
+        'content': 'data(name)',
+        'curve-style': 'bezier',
+        'target-arrow-shape': 'triangle',
+        'color': '#2b2a27',
+        'target-arrow-color': '#ccc',
+        'line-color': '#ccc',
+        'width': 2
+      })
+      .selector('.selected')
+      .css({
+        'background-color': 'black',
+        'line-color': '#2aa198',
+        'target-arrow-color': '#2aa198',
+        'source-arrow-color': '#2aa198'
+      })
+      .selector('.faded')
+      .css({
+        'opacity': 0.25,
+        'text-opacity': 0
+      }),
+
+      elements: {
+        nodes: [
+          [% for state in states %]
+          { data: { id: '[[state]]', name: '[[state]]' }
+          [% if state == initial %]
+          , classes: 'initial'
+          [% endif %]
+          [% if state in final %]
+          , classes: 'final'
+          [% endif %]
+        },
+        [% endfor %]
+      ],
+      edges: [
+        [% for origin, transition in transitions.items() %]
+        [% for letter, dest in transition %]
+        { data: { source: '[[origin]]', target: '[[dest]]' , name: '[[letter]]'} },
+        [% endfor %]
+        [% endfor %]
+      ]
+    }
+  });
+
+  cy.on('tap', 'node', function(e){
+    var node = e.cyTarget;
+    var neighborhood = node.neighborhood().add(node);
+
+    cy.elements().addClass('faded');
+    neighborhood.removeClass('faded');
+    cy.elements().removeClass('selected');
+    node.connectedEdges().addClass('selected');
+  });
+
+  cy.on('tap', function(e){
+    if( e.cyTarget === cy ){
+      cy.elements().removeClass('faded');
+      cy.elements().removeClass('selected');
+    }
+  });
+
+}); // on dom ready
+
+</script>
+</head>
+<body>
+  <div id="overlay"></div>
+  <div id="lines"></div>
+  <div id="cy"></div>
+  <a id="cog" href="#modal">
+    <svg width="50" height="50" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>
+  </a>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>Test</h2>
+        <a href="#close" class="btn-close" aria-hidden="true">x</a>
+      </div>
+      <div class="modal-body">
+        <div id="container">
+          <textarea id="textarea" cols="20" rows="5"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#close" class="btn">Test</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
