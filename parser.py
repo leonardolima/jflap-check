@@ -103,9 +103,19 @@ class Parser(object):
         self.make_list(p)
 
     def p_state(self, p):
-        '''state        : LSTATE x y special output RSTATE'''
+        '''state        : LSTATE id statename RBRACKET x y special output RSTATE'''
 
-        p[0] = Element(type='state', children=[p[2], p[3], p[4], p[5]])
+        p[0] = Element(type='state', children=[p[2], p[3], p[5], p[6], p[7], p[8]])
+
+    def p_id(self, p):
+        '''id           : ID DOUBLEQUOTES VALUE DOUBLEQUOTES'''
+
+        p[0] = Element(type='id', value=p[3])
+
+    def p_statename(self, p):
+        '''statename    : NAME DOUBLEQUOTES VALUE DOUBLEQUOTES'''
+
+        p[0] = Element(type='statename', value=p[3])
 
     def p_x(self, p):
         '''x            : LX VALUE RX'''

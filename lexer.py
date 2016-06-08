@@ -12,7 +12,11 @@ states = (
 )
 
 tokens = (
+    'ID',               # id=
+    'NAME',             # name=
+    'DOUBLEQUOTES',     # "
     'LBRACKET',         # <
+    'RBRACKET',         # >
     'SLASHRBRACKET',    # />
     'VALUE',            # ".*"
     'LSTRUCTURE',       # <structure>
@@ -74,7 +78,7 @@ tokens = (
     'RAXIOM',           # </axiom>
     'LPARAMETER',       # <parameter>
     'RPARAMETER',       # </parameter>
-    'LNAME',            # <nane>
+    'LNAME',            # <name>
     'RNAME',            # </name>
     'LVALUE',           # <value>
     'RVALUE'            # </value>
@@ -86,10 +90,14 @@ t_RSTRUCTURE                              = r'</structure>'
 t_LTYPE                                   = r'<type>'
 t_RTYPE                                   = r'</type>'
 t_LBRACKET                                = r'<'
+t_RBRACKET                                = r'>'
 t_SLASHRBRACKET                           = r'/>'
+t_DOUBLEQUOTES                            = r'\"'
 t_fa_pda_turing_mealy_moore_LAUTOMATON        = r'<automaton>'
 t_fa_pda_turing_mealy_moore_RAUTOMATON        = r'</automaton>'
-t_fa_pda_turing_mealy_moore_LSTATE            = r'<state.*>'
+t_fa_pda_turing_mealy_moore_LSTATE            = r'<state'
+t_fa_pda_turing_mealy_moore_ID                = r'id='
+t_fa_pda_turing_mealy_moore_NAME              = r'name='
 t_fa_pda_turing_mealy_moore_RSTATE            = r'</state>'
 t_fa_pda_turing_mealy_moore_LX                = r'<x>'
 t_fa_pda_turing_mealy_moore_RX                = r'</x>'

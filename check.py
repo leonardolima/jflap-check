@@ -11,7 +11,7 @@ def usage():
     print " python check.py --clean"
 
 def main():
-    try:                                
+    try:
         opts, args = getopt.getopt(sys.argv[1:], "i:pc", ["input=", "print", "clean"])
     except getopt.GetoptError:
         usage()

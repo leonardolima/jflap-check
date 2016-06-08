@@ -1,3 +1,9 @@
+import parser
+import ast
+import sys
+import getopt
+import os
+from subprocess import call
 from Exceptions import DefinitionError
 from Templates import HTMLTemplate
 
@@ -86,23 +92,109 @@ class FiniteAutomaton:
         html = HTMLTemplate.render(self)
         f = open(name + '.html', 'w')
         f.write(html)
-        f.close()
+        f.close()    
+
+def convert(ast):
+
+    def getStatesAndTransitions(node):
+        if node:
+            if node.type != 'automaton':
+                l = list()
+                for c in node.children:
+                    l += getStatesAndTransitions(c)
+                return l
+            else:
+                states = list()
+                transitions = list()
+                for c in node.children:
+                    if c.type == 'state':
+                        states.append(c)
+                    elif c.type == 'transition':
+                        transitions.append(c)
+                return states, transitions
+        else:
+            return []
+
+    states, transitions = getStatesAndTransitions(ast)
+
+    _states = list()
+    _alphabet = list()
+    _final = list()
+    _transitions = {}
+    dictionary = {}
+    initial = ''
+
+    for state in states:
+        i, n = None, None
+
+        for c in state.children:
+            if c.type == 'statename':
+                n = c.value
+                _states.append(c.value)
+            if c.type == 'id':
+                i = c.value
+            if c.type == 'initial':
+                initial = n
+            if c.type == 'final':
+                _final.append(n)
+        dictionary[i] = n
+
+    for transition in transitions:
+        _from, _to, sym = None, None, None
+
+        for c in transition.children:
+            if c.type == 'from':
+                _from = dictionary[c.value]
+            elif c.type == 'to':
+                _to = dictionary[c.value]
+            elif c.type == 'read':
+                sym = c.value
+                _alphabet.append(sym)
+            if _from and _to and sym and _from in _transitions:
+                _transitions[_from] = [(sym, _to)] + _transitions[_from]
+            elif _from and _to and sym:
+                _transitions[_from] = [(sym, _to)]
+
+    __states = set(_states)
+    alphabet = set(_alphabet)
+    final = set(_final)
+
+    a = FiniteAutomaton(__states, alphabet, _transitions, initial, final)
+    return a
+
+def usage():
+    print "Usage: "
+    print " python FiniteAutomaton.py --input <file>.jff"
 
 def main():
-    states = {'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8'}
-    alphabet = {'a', 'b'}
-    initial = 'q1'
-    final = {'q4'}
-    delta = {'q1': [('a', 'q5'), ('b', 'q2')],
-             'q2': [('a', 'q2'), ('b', 'q3')],
-             'q3': [('a', 'q5'), ('b', 'q4')],
-             'q4': [('a', 'q5'), ('b', 'q6')],
-             'q5': [('a', 'q5'), ('b', 'q7')],
-             'q6': [('a', 'q3'), ('b', 'q8')],
-             'q7': [('a', 'q8'), ('b', 'q1')],
-             'q8': [('a', 'q5'), ('b', 'q4')]}
-    a = FiniteAutomaton(states, alphabet, delta, initial, final)
-    a.toHTML()
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "i:", ["input="])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+
+    f = None
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()
+            sys.exist(2)
+        elif opt in ("-i", "--input"):
+            try:
+                f = open(arg, 'r')
+            except (OSError, IOError) as e:
+                usage()
+                sys.exit(2)
+            p = parser.Parser()
+            ast = p.parse(f.read())
+            if ast == None:
+                print "ERROR! The file " + arg + " is not valid"
+            else:
+                print "AST was successfully built. Generating Finite Automata..."
+                a = convert(ast)
+                a.toHTML()
+                print "FiniteAutomata.html was successfully generated! :)"
 
 if __name__ == '__main__':
     main()
