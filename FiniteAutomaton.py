@@ -72,12 +72,6 @@ class FiniteAutomaton:
         if not self.final <= self.states:
             raise DefinitionError('Final states must by part of the automaton states.')
 
-        for state in self.states:
-            state_transitions = dict(self.transitions[state])
-            for letter in self.alphabet:
-                if letter not in state_transitions:
-                    raise DefinitionError('Invalid transition function.')
-
     def check(self, str):
         self.run(str)
         if self.current_state in self.final:
@@ -92,7 +86,7 @@ class FiniteAutomaton:
         html = HTMLTemplate.render(self)
         f = open(name + '.html', 'w')
         f.write(html)
-        f.close()    
+        f.close()
 
 def convert(ast):
 
