@@ -9,6 +9,11 @@ A simple verifier written in Python to check if the syntax of a JFLAP file (.jff
   $ python check.py -i (or --input) <file>.jff -p (or --print, this command is optional)
   ```
 
+* To generate an HTML from a .jff:
+  ```
+  $ python FiniteAutomaton.py --input <file>.jff
+  ```
+
 * To clean the directory:
   ```
   $ python check.py -c (or --clean)
